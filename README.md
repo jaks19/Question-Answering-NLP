@@ -1,3 +1,3 @@
 # Question-Answering-NLP
 
-Authors: Chris [Add github username] and Adarsh [github.com/jaks19]
+Authors: Chris [github.com/chase130101] and Adarsh [github.com/jaks19]
