@@ -1,0 +1,37 @@
+The data for part I is given as:
+
+A. Corpus file text_tokenized.txt.gz
+(1) the question ID (2) the list of words in question title (3) the list of words in question body
+
+B. Training file train_random.txt
+(1) the query question ID (2) the list of similar question IDs (3) the list of randomly selected question IDs
+
+C. Human annotations for evaluation dev.txt test.txt
+(1) the query question ID (2) the list of similar question IDs (3) the list of 20 candidate question IDs (4) the associated BM25 scores of these questions computed by the Lucene search engine. The second field (the set of similar questions) is a subset of the third field.
+
+D. Pre-trained word vectors vectors_pruned.200.txt.gz
+200-dimension word vectors trained using texts from StackExchange and Wikipedia
+
+
+Data processing we might need:
+
+On A.
+(i) A dictionary of question ID --> list of words in title + body
+    (Thinking maybe leave them in form of text so that the dictionary is not too large, then use the function computed from D.)
+
+On B. (FOR TRAINING)
+(i) A dictionary mapping question ID to [[ similar questions' IDs ], [ randomly selected questions IDs ]]
+
+On C. (FOR TESTING)
+(i) A dictionary mapping question ID to [[ similar questions' IDs ], [ list of 20 candidate questions IDs ]]
+    (Maybe do not need to repeat the Ids of similar questions again in the list of all 20)
+
+On D.
+(i) A dictionary mapping a word to a 200-length vector
+
+
+Notes:
+- I am thinking we always juggle with IDs
+- When really need the words of a question, THEN convert ID to the QUESTION TEXT
+- Immediately then we can map each WORD from the text to a VECTOR
+- PLEASE ADD MORE IF WE THINK WE NEED MORE
