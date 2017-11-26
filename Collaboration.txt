@@ -16,18 +16,22 @@ D. Pre-trained word vectors vectors_pruned.200.txt.gz
 Data processing we might need:
 
 On A.
-(i) A dictionary of question ID --> list of words in title + body
+DONE (i) A dictionary of question ID --> list of words in title + body
     (Thinking maybe leave them in form of text so that the dictionary is not too large, then use the function computed from D.)
 
 On B. (FOR TRAINING)
-(i) A dictionary mapping question ID to [[ similar questions' IDs ], [ randomly selected questions IDs ]]
+DONE (i) A dictionary mapping question ID to [[ similar questions' IDs ], [ randomly selected questions IDs ]]
 
 On C. (FOR TESTING)
-(i) A dictionary mapping question ID to [[ similar questions' IDs ], [ list of 20 candidate questions IDs ]]
-    (Maybe do not need to repeat the Ids of similar questions again in the list of all 20)
+(i) A dictionary mapping question ID to [[ similar questions' IDs ], [ different questions IDs ]]
+    (Data was presented as: qid -- ids of similar qs -- ids of candidate qs
+     ids of candidate questions include the ids of similar questions as well
+      implemented method returns, for qid, a list of [ [similar qids], [diff qids] ]
+       Note how ids in list[0] are not repeated in list[1]
+    )
 
 On D.
-(i) A dictionary mapping a word to a 200-length vector
+DONE (i) A dictionary mapping a word to a 200-length vector
 
 
 Notes:

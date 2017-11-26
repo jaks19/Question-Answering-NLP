@@ -1,10 +1,4 @@
-# 1. Organize the Embedding Matrix and Word2Index Dict
-'''
-In ../word_vectors.txt, we have a word, a space, then space-separated floats until a newline character
-The word's embedding is the vector next to it and we need to separate those unique words from their vectors and build:
-- A dict of word to index
-- A matrix of each of these vectors in order so that row i is the ith word's embedding vector
-'''
+# Word mapped to its embedding vector
 def get_words_and_embeddings():
     filepath = "../Data1/vectors_pruned.200.txt"
     lines = open(filepath).readlines()
@@ -14,6 +8,66 @@ def get_words_and_embeddings():
         word2vec[word_coordinates_list[0]] = word_coordinates_list[1:-1]
     return word2vec
 
-word2vec = get_words_and_embeddings()
-print word2vec['zero']
-print len(word2vec['zero'])
+
+# Question id mapped to the content: title + body text
+def questionID_to_questionData():
+    filepath = "../Data1/text_tokenized.txt"
+    lines = open(filepath).readlines()
+
+    id2Data = {}
+    for line in lines:
+        id_title_body_list = line.split('\t')
+        id2Data[int(id_title_body_list[0])] = id_title_body_list[1].split(" ") + id_title_body_list[2].split(" ")
+    return id2Data
+
+
+# For training data, question id mapped to [[similar_questions_ids], [different_questions_ids]]
+def training_id_to_similar_different():
+    filepath = "../Data1/train_random.txt"
+    lines = open(filepath).readlines()
+
+    training_data = {}
+    for line in lines:
+        id_similarids_diffids = line.split('\t')
+        question_id = int(id_similarids_diffids[0])
+        similar_ids = id_similarids_diffids[1].split(" ")
+        different_ids = id_similarids_diffids[2].split(" ")
+
+        for i in range(len(similar_ids)): similar_ids[i] = int(similar_ids[i])
+        for j in range(len(different_ids)): different_ids[j] = int(different_ids[j])
+
+        training_data[question_id] = [ similar_ids, different_ids ]
+    return training_data
+
+
+# For test data, question id mapped to [[similar_questions_ids], [different_questions_ids]]
+# For dev set, use dev=True, for test set use dev=False
+# Note:
+#   If there are 20 similar questions, then the list of different questions ids is empty [ [...], [] ]
+#   Also, there might be no similar question for an id and all are different [ [], [...] ]
+def training_id_to_similar_different(dev=True):
+    filepath = "../Data1/dev.txt" if dev else "../Data1/test.txt"
+    lines = open(filepath).readlines()
+
+    evaluation_data = {}
+    for line in lines:
+        id_similarids_diffids = line.split('\t')
+        question_id = int(id_similarids_diffids[0])
+        similar_ids = id_similarids_diffids[1].split(" ") if id_similarids_diffids[1] != '' else []
+        different_ids = id_similarids_diffids[2].split(" ")
+        for i in range(len(similar_ids)): similar_ids[i] = int(similar_ids[i])
+        for j in range(len(different_ids)): different_ids[j] = int(different_ids[j])
+        different_ids = list(set(different_ids) - set(similar_ids))
+        evaluation_data[question_id] = [similar_ids, different_ids]
+    return evaluation_data
+
+
+# word2vec = get_words_and_embeddings()
+
+# id2Data = questionID_to_questionData()
+
+# training_data = training_id_to_similar_different()
+
+# dev_data = training_id_to_similar_different(dev=True)
+
+# test_data = training_id_to_similar_different(dev=False
