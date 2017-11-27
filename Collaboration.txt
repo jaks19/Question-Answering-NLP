@@ -39,3 +39,16 @@ Notes:
 - When really need the words of a question, THEN convert ID to the QUESTION TEXT
 - Immediately then we can map each WORD from the text to a VECTOR
 - PLEASE ADD MORE IF WE THINK WE NEED MORE
+
+
+
+
+
+
+Regarding functions in Preprocess.py:
+- Changed name of last function since it had the same name as the second to last function
+- Since I am on Windows, I need to use Python 3.5 for PyTorch. Some encoding stuff is different for 3.5 compared to 2.7, so I added a Python 3.5 option for functions that were giving me errors.
+
+
+
+
