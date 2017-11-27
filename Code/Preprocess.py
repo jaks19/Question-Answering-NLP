@@ -10,9 +10,12 @@ def get_words_and_embeddings():
 
 
 # Question id mapped to the content: title + body text
-def questionID_to_questionData():
+def questionID_to_questionData(py35 = False):
     filepath = "../Data1/text_tokenized.txt"
-    lines = open(filepath).readlines()
+    if py35 == True:
+        lines = open(filepath, encoding = 'utf8').readlines()
+    elif py35 == False:
+        lines = open(filepath).readlines()
 
     id2Data = {}
     for line in lines:
@@ -22,9 +25,12 @@ def questionID_to_questionData():
 
 
 # For training data, question id mapped to [[similar_questions_ids], [different_questions_ids]]
-def training_id_to_similar_different():
+def training_id_to_similar_different(py35 = False):
     filepath = "../Data1/train_random.txt"
-    lines = open(filepath).readlines()
+    if py35 == True:
+        lines = open(filepath, encoding = 'utf8').readlines()
+    elif py35 == False:
+        lines = open(filepath).readlines()
 
     training_data = {}
     for line in lines:
@@ -45,7 +51,7 @@ def training_id_to_similar_different():
 # Note:
 #   If there are 20 similar questions, then the list of different questions ids is empty [ [...], [] ]
 #   Also, there might be no similar question for an id and all are different [ [], [...] ]
-def training_id_to_similar_different(dev=True):
+def devTest_id_to_similar_different(dev=True):
     filepath = "../Data1/dev.txt" if dev else "../Data1/test.txt"
     lines = open(filepath).readlines()
 
@@ -68,6 +74,6 @@ def training_id_to_similar_different(dev=True):
 
 # training_data = training_id_to_similar_different()
 
-# dev_data = training_id_to_similar_different(dev=True)
+# dev_data = devTest_id_to_similar_different(dev=True)
 
-# test_data = training_id_to_similar_different(dev=False
+# test_data = devTest_id_to_similar_different(dev=False)
