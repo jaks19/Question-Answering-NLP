@@ -8,14 +8,10 @@ def get_words_and_embeddings():
         word2vec[word_coordinates_list[0]] = word_coordinates_list[1:-1]
     return word2vec
 
-
 # Question id mapped to the content: title + body text
-def questionID_to_questionData(py35 = False):
+def questionID_to_questionData():
     filepath = "../Data1/text_tokenized.txt"
-    if py35 == True:
-        lines = open(filepath, encoding = 'utf8').readlines()
-    elif py35 == False:
-        lines = open(filepath).readlines()
+    lines = open(filepath, encoding = 'utf8').readlines()
 
     id2Data = {}
     for line in lines:
@@ -25,12 +21,9 @@ def questionID_to_questionData(py35 = False):
 
 
 # For training data, question id mapped to [[similar_questions_ids], [different_questions_ids]]
-def training_id_to_similar_different(py35 = False):
+def training_id_to_similar_different():
     filepath = "../Data1/train_random.txt"
-    if py35 == True:
-        lines = open(filepath, encoding = 'utf8').readlines()
-    elif py35 == False:
-        lines = open(filepath).readlines()
+    lines = open(filepath, encoding = 'utf8').readlines()
 
     training_data = {}
     for line in lines:
@@ -53,7 +46,7 @@ def training_id_to_similar_different(py35 = False):
 #   Also, there might be no similar question for an id and all are different [ [], [...] ]
 def devTest_id_to_similar_different(dev=True):
     filepath = "../Data1/dev.txt" if dev else "../Data1/test.txt"
-    lines = open(filepath).readlines()
+    lines = open(filepath, encoding = 'utf8').readlines()
 
     evaluation_data = {}
     for line in lines:
@@ -67,13 +60,8 @@ def devTest_id_to_similar_different(dev=True):
         evaluation_data[question_id] = [similar_ids, different_ids]
     return evaluation_data
 
-
 # word2vec = get_words_and_embeddings()
-
 # id2Data = questionID_to_questionData()
-
 # training_data = training_id_to_similar_different()
-
 # dev_data = devTest_id_to_similar_different(dev=True)
-
 # test_data = devTest_id_to_similar_different(dev=False)
