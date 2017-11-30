@@ -116,20 +116,21 @@ for epoch in range(num_epochs):
             # Get hidden layers for all p_minus [1 x num_neg_qs x 100]
             neg_qs_hidden = lstm(neg_qs_padded, (h0, c0))[1][0]
 
-            # Normalize by num_words in each sentence and get cosine similarity
+            # Normalize each hidden_layer by num_words and get cosine similarity
+            # Retrieve the max of all neg cos sims
             num_hidden_layers_in_all = neg_qs_hidden.size()[1]
-            score_neg_qs = Variable(torch.zeros(num_hidden_layers_in_all).float())
+            maxi_score = -100000
             for i in range(num_hidden_layers_in_all):
                 normalized_hidden_layer = neg_qs_hidden[:, i, :] / neg_qs_seq_length[i]
-                score_neg_qs[i] = F.cosine_similarity(normalized_hidden_layer, normalized_q_hidden.squeeze(0), dim=1)
+                score = F.cosine_similarity(normalized_hidden_layer, normalized_q_hidden.squeeze(0), dim=1).data[0]
+                if score > maxi_score: maxi_score = score
+            max_neg_cos_sim_variable = Variable(torch.ones(1)) * maxi_score
 
-            # For each (q,p_plus) pair, get loss by comparing cos_sim (q,p_plus) v/s (q,p_minus) for all p_minus
-            # Keep adding losses to batch loss
-            total_q_neg = len(score_neg_qs)
+            # For each (q,p_plus) pair, get loss by comparing cos_sim (q,p_plus) v/s max[(q,p_minus)] for all p_minus
             for score_q_p_plus in score_pos_qs:
-                batch_loss += loss_function.forward(Variable(torch.ones(total_q_neg)) * score_q_p_plus,
-                                                    score_neg_qs,
-                                                    Variable(torch.ones(total_q_neg)))
+                batch_loss += loss_function.forward(score_q_p_plus,
+                                                    max_neg_cos_sim_variable,
+                                                    Variable(torch.ones(1)))
 
         # Optimize model based on losses
         batch_loss.backward()
