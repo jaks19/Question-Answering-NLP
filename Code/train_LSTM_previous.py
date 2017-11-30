@@ -4,8 +4,7 @@ from get_q_matrices_functions import *
 import numpy as np
 import torch
 from torch.autograd import Variable
-import torch.nn.functional as F
-
+from torch.nn.modules.distance import CosineSimilarity
 
 ''' Data Prep '''
 
@@ -31,6 +30,9 @@ bidirectional = False
 
 # LSTM model, classifier, loss
 lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
+
+# Cosine similarity distance metric
+cosSim = CosineSimilarity()
 
 # Loss function
 loss_function = torch.nn.MarginRankingLoss(margin=0.2, size_average=False)
@@ -60,7 +62,6 @@ for epoch in range(num_epochs):
     for batch in range(1, num_batches+2):
         print("Working on batch # ", batch)
 
-        # All question ids for this batch
         questions_this_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
 
         # Init gradient and loss for this batch
@@ -97,39 +98,38 @@ for epoch in range(num_epochs):
             h0 = Variable(torch.zeros(1, 1, hidden_size))
             c0 = Variable(torch.zeros(1, 1, hidden_size))
 
-            # Get last hidden layer for q and normalize by num_words
-            q_last_hidden = lstm(q_matrix_3d, (h0, c0))[1][0]
-            normalized_q_hidden = q_last_hidden / q_matrix_3d.size()[1]
+            # Get average hidden layer for q
+            q_hidden = lstm(q_matrix_3d, (h0, c0))[0]
+            avg_q_hidden = torch.sum(q_hidden, dim = 1) / q_matrix_3d.size()[1]
 
-            # Get hidden layers for all p_plus [1 x num_pos_qs x 100]
-            pos_qs_hidden = lstm(pos_qs_padded, (h0, c0))[1][0]
+            # Get hidden layers for all p_plus and sum them for each sequence
+            pos_q_hidden = torch.nn.utils.rnn.pad_packed_sequence(lstm(pos_qs_padded, (h0, c0))[0], batch_first=True)
+            sum_h_pos_q = torch.sum(pos_q_hidden[0], dim=1)
 
-            # Normalize each hidden layer by num_words
-            # And get cosine similarity between each p_plus and q
-            # Each pair is one basis of comparison against all the negatives
-            num_hidden_layers_in_all = pos_qs_hidden.size()[1]
-            score_pos_qs = Variable(torch.zeros(num_hidden_layers_in_all).float())
-            for i in range(num_hidden_layers_in_all):
-                normalized_hidden_layer = pos_qs_hidden[:, i, :] / pos_qs_seq_length[i]
-                score_pos_qs[i] = F.cosine_similarity(normalized_hidden_layer, normalized_q_hidden.squeeze(0), dim=1)
+            # Get cosine similarity between q and all p_plus, average score and make reference vector for later usage
+            score_pos_qs = Variable(torch.zeros(sum_h_pos_q.size()[0]).float())
+            for i in range(sum_h_pos_q.size()[0]):
+                avg_h_pos_q_i = (sum_h_pos_q[i] / pos_q_hidden[1][i]).unsqueeze(0)
+                score_pos_q_i = cosSim.forward(avg_q_hidden, avg_h_pos_q_i)
+                score_pos_qs[i] = score_pos_q_i
 
-            # Get hidden layers for all p_minus [1 x num_neg_qs x 100]
-            neg_qs_hidden = lstm(neg_qs_padded, (h0, c0))[1][0]
+            score_pos_q_mean = score_pos_qs.mean()
+            score_pos_q_vec = Variable(torch.ones(len(neg_qs_seq_length))).float() * score_pos_q_mean
 
-            # Normalize by num_words in each sentence and get cosine similarity
-            num_hidden_layers_in_all = neg_qs_hidden.size()[1]
-            score_neg_qs = Variable(torch.zeros(num_hidden_layers_in_all).float())
-            for i in range(num_hidden_layers_in_all):
-                normalized_hidden_layer = neg_qs_hidden[:, i, :] / neg_qs_seq_length[i]
-                score_neg_qs[i] = F.cosine_similarity(normalized_hidden_layer, normalized_q_hidden.squeeze(0), dim=1)
+            # Get hidden layers for all negative questions and sum them for each sequence
+            neg_q_hidden = torch.nn.utils.rnn.pad_packed_sequence(lstm(neg_qs_padded, (h0, c0))[0], batch_first=True)
+            sum_h_neg_q = torch.sum(neg_q_hidden[0], dim = 1)
 
-            # For each (q,p_plus) pair, get loss by comparing cos_sim (q,p_plus) v/s (q,p_minus) for all p_minus
-            # Keep adding losses to batch loss
-            total_q_neg = len(score_neg_qs)
-            for score_q_p_plus in score_pos_qs:
-                batch_loss += loss_function.forward(Variable(torch.ones(total_q_neg)) * score_q_p_plus,
-                                                    score_neg_qs,
-                                                    Variable(torch.ones(total_q_neg)))
+            # Average hidden layers for each p_minus and get cos similarity between each p_minus and q
+            score_neg_qs = Variable(torch.zeros(sum_h_neg_q.size()[0]).float())
+            for i in range(sum_h_neg_q.size()[0]):
+                avg_h_neg_q_i = (sum_h_neg_q[i]/neg_q_hidden[1][i]).unsqueeze(0)
+                score_neg_q_i = cosSim.forward(avg_q_hidden, avg_h_neg_q_i)
+                score_neg_qs[i] = score_neg_q_i
+
+            # Compare all the cos similarities (q,p_plus) v/s (q,p_minus) for all p_minus
+            # Add loss for this question to batch loss which collects the losses for each q in the batch
+            batch_loss += loss_function.forward(score_pos_q_vec, score_neg_qs, Variable(torch.ones(score_neg_qs.size()[0])))
 
         # Optimize model based on losses
         batch_loss.backward()
@@ -137,15 +137,11 @@ for epoch in range(num_epochs):
 
         print("loss on this batch: ", batch_loss.data[0])
 
-
-    ''' Pickle Model after each epoch'''
-
+    # Save model after this epoch
     # Note: Model cannot be re-trained, but can be loaded for evaluation (See below)
     if pickle_each_epoch:
         torch.save(lstm, '../Pickled/LSTM_epoch' + str(epoch) + '.pt')
 
-
-# Notes:
-# Run these line in evaluation scripts to load model:
-# lstm_loaded = torch.load('filename.pt')
-# lstm_loaded.eval()
+    # Run these line in evaluation scripts to load model:
+    # lstm_loaded = torch.load('filename.pt')
+    # lstm_loaded.eval()

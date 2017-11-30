@@ -28,3 +28,13 @@ I think I have done everything as I outlined, so I'm not sure what is wrong.
 Also, I've been told it's a bad practice to upload Jupyter notebooks, but I've uploaded mine anyway in case you wanna take a look, lol.
 
 If you have a more efficient way of implementing this, feel free to change any of the code!
+
+
+
+------
+Second round of coding:
+- Training and loss followed: 394, 332, 201, 156, 259, 200, 205, 142, 175, 108,
+- Need to implement: instead of taking cosine sim of all positives and averaging the result, take q and one of its p+,
+compare to all p-. Then move to the next p+ for same q and compare to all p-. Until all p+ is done then move to NEXT q.
+
+- 
