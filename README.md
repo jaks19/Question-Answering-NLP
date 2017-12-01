@@ -16,3 +16,8 @@ This folder should have all the data files, extracted, so that the data processi
 I have removed them from the repo as push time was too long
 
 REMEMBER TO MAKE A COPY OF ALL DATA FILES ON YOUR MACHINE BEFORE PULLING AS THE ONES IN YOUR WORKING FOLDER WILL GET REMOVED!
+
+
+To save and load optimizer states:
+https://discuss.pytorch.org/t/saving-and-loading-sgd-optimizer/2536/5
+A quick workaround that fixed it for me was doing optimizer.state = defaultdict(dict, optimizer.state) after doing optimizer.load_state_dict(torch.load('optim.pth')).
