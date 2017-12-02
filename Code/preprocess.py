@@ -16,7 +16,25 @@ def questionID_to_questionData():
     id2Data = {}
     for line in lines:
         id_title_body_list = line.split('\t')
-        id2Data[int(id_title_body_list[0])] = id_title_body_list[1].split(" ") + id_title_body_list[2].split(" ")
+        title_text = id_title_body_list[1].split(" ")
+        body_text = id_title_body_list[2].split(" ")
+        id2Data[int(id_title_body_list[0])] = title_text + body_text
+    return id2Data
+
+def questionID_to_questionData_truncate(max_length):
+    filepath = "../Data1/text_tokenized.txt"
+    lines = open(filepath, encoding = 'utf8').readlines()
+
+    id2Data = {}
+    for line in lines:
+        id_title_body_list = line.split('\t')
+        title_text = id_title_body_list[1].split(" ")
+        body_text = id_title_body_list[2].split(" ")
+        if len(title_text) >= max_length:
+            id2Data[int(id_title_body_list[0])] = title_text[:max_length]
+        else:
+            diff = max_length - len(title_text)
+            id2Data[int(id_title_body_list[0])] = title_text + body_text[:diff]
     return id2Data
 
 
@@ -26,7 +44,7 @@ def training_id_to_similar_different():
     lines = open(filepath, encoding = 'utf8').readlines()
 
     training_data = {}
-    for line in lines:
+    for line in lines[:100]:
         id_similarids_diffids = line.split('\t')
         question_id = int(id_similarids_diffids[0])
         similar_ids = id_similarids_diffids[1].split(" ")
@@ -39,11 +57,10 @@ def training_id_to_similar_different():
     return training_data
 
 
-# For test data, question id mapped to [[similar_questions_ids], [different_questions_ids]]
+# For test data, question id mapped to [[similar_questions_ids], [all_questions_ids]]
 # For dev set, use dev=True, for test set use dev=False
 # Note:
-#   If there are 20 similar questions, then the list of different questions ids is empty [ [...], [] ]
-#   Also, there might be no similar question for an id and all are different [ [], [...] ]
+#   [similar_questions_ids] is a subset of [all_questions_ids]
 def devTest_id_to_similar_different(dev=True):
     filepath = "../Data1/dev.txt" if dev else "../Data1/test.txt"
     lines = open(filepath, encoding = 'utf8').readlines()
@@ -56,8 +73,7 @@ def devTest_id_to_similar_different(dev=True):
         different_ids = id_similarids_diffids[2].split(" ")
         for i in range(len(similar_ids)): similar_ids[i] = int(similar_ids[i])
         for j in range(len(different_ids)): different_ids[j] = int(different_ids[j])
-        different_ids = list(set(different_ids) - set(similar_ids))
-        evaluation_data[question_id] = [similar_ids, different_ids]
+        evaluation_data[question_id] = [ similar_ids, different_ids ]
     return evaluation_data
 
 # word2vec = get_words_and_embeddings()
