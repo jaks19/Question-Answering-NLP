@@ -44,7 +44,7 @@ def training_id_to_similar_different():
     lines = open(filepath, encoding = 'utf8').readlines()
 
     training_data = {}
-    for line in lines[:100]:
+    for line in lines:
         id_similarids_diffids = line.split('\t')
         question_id = int(id_similarids_diffids[0])
         similar_ids = id_similarids_diffids[1].split(" ")
