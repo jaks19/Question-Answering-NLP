@@ -32,8 +32,8 @@ bias = True
 
 # CNN model
 cnn = torch.nn.Sequential()
-cnn.add_module('conv', torch.nn.Conv1d(in_channels = 200, out_channels = hidden_size, kernel_size = kernel_size, padding = padding, dilation = dilation, groups = groups, bias = bias))
-cnn.add_module('tanh', torch.nn.Tanh())
+cnn.add_module('conv', torch.nn.Conv1d(in_channels = 200, out_channels = hidden_size, kernel_size = kernel_size, padding = padding, dilation = dilation, groups = groups, bias = bias).cuda())
+cnn.add_module('tanh', torch.nn.Tanh().cuda())
 
 # Loss function
 loss_function = torch.nn.MarginRankingLoss(margin=0.2, size_average=False)
@@ -68,7 +68,7 @@ for epoch in range(num_epochs):
 
 		# Init gradient and loss for this batch
 		optimizer.zero_grad()
-		batch_loss = Variable(torch.zeros(1).float())
+		total_loss = Variable(torch.zeros(1).cuda().float())
 
 		for q in questions_this_batch:
 			# Grab positives and negatives, turn them into their respective matrices
@@ -78,7 +78,7 @@ for epoch in range(num_epochs):
             
 			# Build q matrix
 			# Get hidden layer for q normalized by num_words
-			q_matrix_3d = torch.transpose(Variable(torch.from_numpy(get_question_matrix(q, word2vec, id2Data))), 1, 2)
+			q_matrix_3d = torch.transpose(Variable(torch.from_numpy(get_question_matrix(q, word2vec, id2Data)).cuda()), 1, 2)
 			q_cnn_out = cnn(q_matrix_3d)
 			normalized_q_hidden = (torch.sum(q_cnn_out, dim = 2) / q_matrix_3d.size()[2]).squeeze(0)
             
@@ -88,10 +88,10 @@ for epoch in range(num_epochs):
 			# Get cosine similarity between each p_plus and q
 			# Each pair is one basis of comparison against all the negatives
 			num_hidden_layers_in_all = len(pos_qs)
-			score_pos_qs = Variable(torch.zeros(num_hidden_layers_in_all).float())
+			score_pos_qs = Variable(torch.zeros(num_hidden_layers_in_all).cuda().float())
 			for i in range(len(pos_qs)):
-				pos_q_matrix_3d = torch.transpose(Variable(torch.from_numpy(get_question_matrix(pos_qs[i], word2vec, id2Data))), 1, 2)
-				p_plus_cnn_out = cnn.forward(pos_q_matrix_3d).squeeze(0)
+				pos_q_matrix_3d = torch.transpose(Variable(torch.from_numpy(get_question_matrix(pos_qs[i], word2vec, id2Data)).cuda()), 1, 2)
+				p_plus_cnn_out = cnn(pos_q_matrix_3d).squeeze(0)
 				normalized_p_plus_hidden = (torch.sum(p_plus_cnn_out, dim = 1) / pos_q_matrix_3d.size()[2])
 				score_pos_qs[i] = F.cosine_similarity(normalized_p_plus_hidden, normalized_q_hidden, dim = 0)
             
@@ -101,10 +101,10 @@ for epoch in range(num_epochs):
 			# Get cosine similarity between each p_minus and q
 			# Retrieve the max of all neg cos sims
 			num_hidden_layers_in_all = len(neg_qs)
-			maxi_score = Variable(torch.ones(1)) * -100000
+			maxi_score = Variable(torch.ones(1).float().cuda()) * -100000
 			for i in range(len(neg_qs)):
-				neg_q_matrix_3d = torch.transpose(Variable(torch.from_numpy(get_question_matrix(neg_qs[i], word2vec, id2Data))), 1, 2)
-				p_minus_cnn_out = cnn.forward(neg_q_matrix_3d).squeeze(0)
+				neg_q_matrix_3d = torch.transpose(Variable(torch.from_numpy(get_question_matrix(neg_qs[i], word2vec, id2Data)).cuda()), 1, 2)
+				p_minus_cnn_out = cnn(neg_q_matrix_3d).squeeze(0)
 				normalized_p_minus_hidden = (torch.sum(p_minus_cnn_out, dim = 1) / neg_q_matrix_3d.size()[2])
 				score = F.cosine_similarity(normalized_p_minus_hidden, normalized_q_hidden, dim = 0)
 				if score.data[0] > maxi_score.data[0]: 
@@ -116,7 +116,7 @@ for epoch in range(num_epochs):
 			for score_q_p_plus in score_pos_qs:
 				batch_loss += loss_function.forward(score_q_p_plus,
 													max_neg_cos_sim_variable,
-													Variable(torch.ones(1)))
+													Variable(torch.ones(1).cuda()))
 
 		# Optimize model based on losses
 		batch_loss.backward()
