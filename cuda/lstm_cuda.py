@@ -23,12 +23,12 @@ batch_first = True
 dropout = 0.2
 bidirectional = False
 
-lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional).cuda()
+lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
 loss_function = torch.nn.MultiMarginLoss(margin=0.2)
 optimizer = torch.optim.Adam(lstm.parameters(), lr=10**-4, weight_decay=0.001)
 
-h0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True).cuda()
-c0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True).cuda()
+h0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
+c0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
 
 
 ''' Procedural parameters '''
@@ -128,11 +128,11 @@ def construct_qs_matrix(q_ids_sequential, dict_sequence_lengths, candidates=Fals
 
     qs_padded = padded_q_matrix(qs_seq_length, qs_matrix_list, input_size)
     qs_hidden = torch.nn.utils.rnn.pad_packed_sequence(lstm(qs_padded, (h0, c0))[0], batch_first=True)
-    sum_h_qs = torch.sum(qs_hidden[0], dim=1).cuda()
-    mean_pooled_h_qs = torch.div(sum_h_qs, torch.autograd.Variable(torch.FloatTensor(qs_seq_length)[:, np.newaxis]).cuda())
+    sum_h_qs = torch.sum(qs_hidden[0], dim=1)
+    mean_pooled_h_qs = torch.div(sum_h_qs, torch.autograd.Variable(torch.FloatTensor(qs_seq_length)[:, np.newaxis]))
     
-    qs_tuples = mean_pooled_h_qs.split(1+num_differing_questions).cuda()
-    final_matrix_tuples_by_constituent_qs_by_hidden_size = torch.stack(qs_tuples, dim=0, out=None).cuda()
+    qs_tuples = mean_pooled_h_qs.split(1+num_differing_questions)
+    final_matrix_tuples_by_constituent_qs_by_hidden_size = torch.stack(qs_tuples, dim=0, out=None)
 
     return final_matrix_tuples_by_constituent_qs_by_hidden_size
 
@@ -155,12 +155,12 @@ for epoch in range(num_epochs):
 
         print('got matrices')
         
-        similarity_matrix = torch.nn.functional.cosine_similarity(candidates_qs_tuples_matrix, main_qs_tuples_matrix, dim=2, eps=1e-08).cuda()
+        similarity_matrix = torch.nn.functional.cosine_similarity(candidates_qs_tuples_matrix, main_qs_tuples_matrix, dim=2, eps=1e-08)
 
         print('got cosine similarity')
         
-        target = Variable(torch.LongTensor([0] * int(len(sequence_ids)/(1+num_differing_questions)))).cuda()
-        loss_batch = loss_function(similarity_matrix, target).cuda()
+        target = Variable(torch.LongTensor([0] * int(len(sequence_ids)/(1+num_differing_questions))))
+        loss_batch = loss_function(similarity_matrix, target)
 
         print('got loss of: ', loss_batch, ', calling backward soon!')
         

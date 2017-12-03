@@ -34,7 +34,7 @@ def padded_q_matrix(q_seq_lengths, q_matrix_list, input_size):
     q_matrix_loc = scipy.stats.rankdata(-np.array(q_seq_lengths), method = 'ordinal') - 1
     for i in range(len(q_seq_lengths)):
         q_matrix[q_matrix_loc[i], :q_seq_lengths[i]] = q_matrix_list[i]
-    q_matrix = Variable(torch.from_numpy(q_matrix)).float().cuda()
+    q_matrix = Variable(torch.from_numpy(q_matrix)).float()
 
     # Pack and pad batch
     q_padded = torch.nn.utils.rnn.pack_padded_sequence(q_matrix, np.sort(q_seq_lengths)[::-1], batch_first=True)
