@@ -6,6 +6,7 @@ import torch
 from torch.autograd import Variable
 from torch.nn.modules.distance import CosineSimilarity
 
+import time
 
 ''' Data Prep '''
 training_data = training_id_to_similar_different()
@@ -22,10 +23,11 @@ bias = True
 batch_first = True
 dropout = 0.2
 bidirectional = False
+bidirectional = False
 
 lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
 loss_function = torch.nn.MultiMarginLoss(margin=0.2)
-optimizer = torch.optim.Adam(lstm.parameters(), lr=10**-4, weight_decay=0.001)
+optimizer = torch.optim.Adam(lstm.parameters(), lr=10**-3, weight_decay=0.001)
 
 h0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
 c0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
@@ -40,27 +42,6 @@ num_batches = round(len(training_data.keys())/batch_size)
 
 
 '''Matrix constructors (use global vars, leave in order)'''
-
-# Given a list of ids, compute the hidden layer for each of those questions
-# Ideal if need to work on a group, not just one question
-def mean_pooled_hidden_layers_for_ids(list_ids, input_size):
-    qs_matrix_list = []
-    qs_seq_length = []
-        
-    for q in list_ids:
-        q_matrix_3d = get_question_matrix(q, word2vec, id2Data)
-        qs_matrix_list.append(q_matrix_3d)
-        qs_seq_length.append(q_matrix_3d.shape[1])
-    
-    qs_padded = padded_q_matrix(qs_seq_length, qs_matrix_list, input_size)
-    qs_hidden = torch.nn.utils.rnn.pad_packed_sequence(lstm(qs_padded, (h0, c0))[0], batch_first=True)
-    sum_h_qs = torch.sum(qs_hidden[0], dim=1)
-    
-    lst_hidden = []
-    for i in range(len(sum_h_qs)): 
-        h = sum_h_qs[i] / qs_seq_length[i]
-        lst_hidden.append(h)
-    return lst_hidden
 
 # Given ids of main qs in this batch
 #
@@ -142,32 +123,24 @@ def construct_qs_matrix(q_ids_sequential, dict_sequence_lengths, candidates=Fals
 for epoch in range(num_epochs):
     for batch in range(1, num_batches+2):
         
+        start = time.time()
+        
         print("Working on batch #: ", batch)
         
         optimizer.zero_grad()
         questions_this_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
         sequence_ids, dict_sequence_lengths = order_ids(questions_this_batch)
 
-        print('got raw data')
-        
         main_qs_tuples_matrix = construct_qs_matrix(questions_this_batch, dict_sequence_lengths, candidates=False)
         candidates_qs_tuples_matrix = construct_qs_matrix(sequence_ids, dict_sequence_lengths, candidates=True)
 
-        print('got matrices')
-        
         similarity_matrix = torch.nn.functional.cosine_similarity(candidates_qs_tuples_matrix, main_qs_tuples_matrix, dim=2, eps=1e-08)
 
-        print('got cosine similarity')
-        
         target = Variable(torch.LongTensor([0] * int(len(sequence_ids)/(1+num_differing_questions))))
         loss_batch = loss_function(similarity_matrix, target)
 
-        print('got loss of: ', loss_batch, ', calling backward soon!')
-        
         loss_batch.backward()
 
-        print('backward done, calling step soon')
-        
         optimizer.step()
         
-        print("loss on this batch: ", loss_batch.data[0])
+        print("loss_on_batch:", loss_batch.data[0], " time_on_batch:", time.time() - start)
