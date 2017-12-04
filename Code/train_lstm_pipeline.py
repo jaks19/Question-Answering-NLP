@@ -48,7 +48,7 @@ batch_first = True
 bidirectional = False
 
 '''Hyperparams'''
-dropout = 0.2
+dropout = 0.1
 margin = 0.2
 lr = 10**-3
 
@@ -181,6 +181,11 @@ for epoch in range(num_epochs):
     similarity_matrix = torch.nn.functional.cosine_similarity(candidates_qs_tuples_matrix, main_qs_tuples_matrix, dim=2, eps=1e-08)
 
     MRR_score = get_MRR_score(similarity_matrix)
+    
+    with open('logs.txt', 'a') as log_file:
+        log_file.write('epoch: ' + str(epoch) + '\n')
+        log_file.write('lr: ' + str(lr) +  ' marg: ' + str(margin) + ' drop: ' + str(dropout) + '\n' )        
+        log_file.write('MRR: ' +  str(MRR_score) + '\n')
 
     print("MRR score on evaluation set:", MRR_score)
 
