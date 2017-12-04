@@ -8,6 +8,11 @@ from torch.nn.modules.distance import CosineSimilarity
 
 import time
 
+'''Hyperparams dashboard'''
+dropout = 0.1
+margin = 0.2
+lr = 10**-3
+
 # Produces tensor [1 x num_words x input_size] for one particular question
 def get_question_matrix(questionID, word2vec, id2Data, input_size):
     # Get the vector representation for each word in this question as list [v1,v2,v3,...]
@@ -46,11 +51,6 @@ num_layers = 1
 bias = True
 batch_first = True
 bidirectional = False
-
-'''Hyperparams'''
-dropout = 0.1
-margin = 0.2
-lr = 10**-3
 
 lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
 loss_function = torch.nn.MultiMarginLoss(margin=margin)
@@ -199,4 +199,4 @@ for epoch in range(num_epochs):
     
     '''Save model for this epoch'''
     
-    torch.save(lstm, '../Pickle/LSTM_m2d2l3epoch' + str(epoch) + '.pt')
+    torch.save(lstm, '../Pickle/LSTM_m2d1l3epoch' + str(epoch) + '.pt')
