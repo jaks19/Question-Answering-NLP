@@ -52,7 +52,7 @@ bidirectional = False
 
 lstm = torch.nn.LSTM(input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
 loss_function = torch.nn.MultiMarginLoss(margin=0.2)
-optimizer = torch.optim.Adam(lstm.parameters(), lr=10**-2, weight_decay=0.001)
+optimizer = torch.optim.Adam(lstm.parameters(), lr=10**-3)
 
 h0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
 c0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
@@ -153,7 +153,7 @@ for epoch in range(num_epochs):
         main_qs_tuples_matrix = construct_qs_matrix(questions_this_batch, dict_sequence_lengths, candidates=False)
         
         similarity_matrix = torch.nn.functional.cosine_similarity(candidates_qs_tuples_matrix, main_qs_tuples_matrix, dim=2, eps=1e-08)
-
+        print(similarity_matrix)
         target = Variable(torch.LongTensor([0] * int(len(sequence_ids)/(1+num_differing_questions))))
         loss_batch = loss_function(similarity_matrix, target)
 
