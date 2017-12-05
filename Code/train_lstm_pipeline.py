@@ -11,7 +11,7 @@ import time
 
 
 '''Hyperparams dashboard'''
-dropout = 0.1
+dropout = 0.2
 margin = 0.2
 lr = 10**-3
 
@@ -110,4 +110,4 @@ for epoch in range(num_epochs):
     print("Trained on dev set")
     
     '''Save model for this epoch'''
-    torch.save(lstm, '../Pickle/LSTM_m2d1l3epoch' + str(epoch) + '.pt')
+    torch.save(lstm, '../Pickle/LSTM_BESTMODEL_epoch' + str(epoch) + '.pt')
