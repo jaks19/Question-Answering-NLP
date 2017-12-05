@@ -10,13 +10,13 @@ import time
 ''' Data Prep '''
 dev = True
 testing_data = devTest_id_to_similar_different(dev)
-testingQuestionIds = list(testing_data.keys())[:10]
+testingQuestionIds = list(testing_data.keys())
 word2vec = get_words_and_embeddings()
 id2Data = questionID_to_questionData_truncate(100)
 
 
 ''' Model (Specify pickled model name)'''
-lstm = torch.load('../Pickle/LSTM_m2d1l3epoch1.pt')
+lstm = torch.load('../Pickle/LSTM_m2d1l3epoch5.pt')
 lstm.eval()
 
 

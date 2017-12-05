@@ -18,12 +18,12 @@ lr = 10**-3
 
 ''' Data Prep '''
 training_data = training_id_to_similar_different()
-trainingQuestionIds = list(training_data.keys())[:10]
+trainingQuestionIds = list(training_data.keys())
 word2vec = get_words_and_embeddings()
 id2Data = questionID_to_questionData_truncate(100)
 
 dev_data = devTest_id_to_similar_different(dev=True)
-devQuestionIds = list(dev_data.keys())[:5]
+devQuestionIds = list(dev_data.keys())
 
 
 ''' Model Specs '''
@@ -43,7 +43,7 @@ c0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
 
 
 ''' Procedural parameters '''
-batch_size = 2
+batch_size = 100
 num_differing_questions = 20
 num_epochs = 10
 num_batches = round(len(trainingQuestionIds)/batch_size)
