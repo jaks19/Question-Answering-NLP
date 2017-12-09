@@ -3,13 +3,6 @@ import torch
 from torch.autograd import Variable
 
 
-# Global vars
-hidden_size = 100
-h0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
-c0 = Variable(torch.zeros(1, 1, hidden_size), requires_grad=True)
-input_size = 200
-num_differing_questions = 20
-
 # Produces tensor [1 x num_words x input_size] for one particular question
 def get_question_matrix(questionID, word2vec, id2Data, input_size):
     # Get the vector representation for each word in this question as list [v1,v2,v3,...]
@@ -39,7 +32,7 @@ def get_question_matrix(questionID, word2vec, id2Data, input_size):
 # q_2+, q_2-, q_2--,..., q_2++, q_2-, q_2--,...,]
 # All n main questions have their pos,neg,neg,neg,... interleaved
 # 2. A dict mapping main question id --> its interleaved sequence length
-def organize_ids_training(q_ids, data):
+def organize_ids_training(q_ids, data, num_differing_questions):
     sequence_ids = []
     dict_sequence_lengths = {}
     
@@ -86,7 +79,7 @@ def organize_test_ids(q_ids, data):
 # Basically each q will be a matrix of repeated q's: num_tuples x num_candidates_in_tuple, all elts are q (repeated)
 
 # This method constructs those matrices, use candidates=True for candidates matrix
-def construct_qs_matrix_training(q_ids_sequential, lstm, word2vec, id2Data, dict_sequence_lengths, candidates=False):
+def construct_qs_matrix_training(q_ids_sequential, lstm, h0, c0, word2vec, id2Data, dict_sequence_lengths, input_size, num_differing_questions, candidates=False):
     if not candidates:
         q_ids_complete = []
         for q in q_ids_sequential:
@@ -103,7 +96,7 @@ def construct_qs_matrix_training(q_ids_sequential, lstm, word2vec, id2Data, dict
         qs_seq_length.append(q_num_words)
 
     qs_padded = Variable(torch.cat(qs_matrix_list, 0))
-    qs_hidden = lstm(qs_padded, (h0, c0)) # [ [num_q, num_word_per_q, hidden_size] i.e. all hidden, [1, num_q, hidden_size]  i.e. final hidden]
+    qs_hidden = lstm(qs_padded, (h0, c0))
     sum_h_qs = torch.sum(qs_hidden[0], dim=1)
     mean_pooled_h_qs = torch.div(sum_h_qs, torch.autograd.Variable(torch.FloatTensor(qs_seq_length)[:, np.newaxis]))
     qs_tuples = mean_pooled_h_qs.split(1+num_differing_questions)
@@ -114,13 +107,11 @@ def construct_qs_matrix_training(q_ids_sequential, lstm, word2vec, id2Data, dict
 
 # Case candidates: gives a matrix with a row for each q_main, with 20 p's
 # Case not candidates: gives a matrix with a row for each q_main, with 20 q_main's repeated
-def construct_qs_matrix_testing(q_ids_sequential, lstm, word2vec, id2Data, candidates=False):
-    num_ps_per_q = 20
-    
+def construct_qs_matrix_testing(q_ids_sequential, lstm, h0, c0, word2vec, id2Data, input_size, num_differing_questions, candidates=False):
     if not candidates:
         q_ids_complete = []
         for q in q_ids_sequential:
-            q_ids_complete += [q] * num_ps_per_q
+            q_ids_complete += [q] * num_differing_questions
     
     else: q_ids_complete = q_ids_sequential
 
@@ -136,7 +127,7 @@ def construct_qs_matrix_testing(q_ids_sequential, lstm, word2vec, id2Data, candi
     qs_hidden = lstm(qs_padded, (h0, c0)) # [ [num_q, num_word_per_q, hidden_size] i.e. all hidden, [1, num_q, hidden_size]  i.e. final hidden]
     sum_h_qs = torch.sum(qs_hidden[0], dim=1)
     mean_pooled_h_qs = torch.div(sum_h_qs, torch.autograd.Variable(torch.FloatTensor(qs_seq_length)[:, np.newaxis]))
-    qs_tuples = mean_pooled_h_qs.split(num_ps_per_q)
+    qs_tuples = mean_pooled_h_qs.split(num_differing_questions)
     final_matrix_tuples_by_constituent_qs_by_hidden_size = torch.stack(qs_tuples, dim=0, out=None)
     
     return final_matrix_tuples_by_constituent_qs_by_hidden_size
