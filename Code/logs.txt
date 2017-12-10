@@ -188,3 +188,7 @@ epoch: 6
 lr: 0.001 marg: 0.4 drop: 0.2
 dev_MRR: 1.0
 test_MRR: 0.517599049608063
+epoch: 0
+lr: 0.001 marg: 0.4 drop: 0.2
+dev_MRR: 1.0
+test_MRR: 0.5568962852500505

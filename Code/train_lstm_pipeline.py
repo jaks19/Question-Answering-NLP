@@ -54,7 +54,7 @@ num_epochs = 10
 num_batches = round(len(trainingQuestionIds)/batch_size)
 
 
-def train_model(lstm, optimizer, batch_ids, batch_data, word2vec, id2Data, dev_set=False):
+def train_model(lstm, optimizer, batch_ids, batch_data, word2vec, id2Data):
     lstm.train()
     optimizer.zero_grad()
 
@@ -70,8 +70,7 @@ def train_model(lstm, optimizer, batch_ids, batch_data, word2vec, id2Data, dev_s
     loss_batch.backward()
     optimizer.step()
 
-    if dev_set: print("Trained on dev set with loss:", loss_batch.data[0], " time_on_batch:", time.time() - start)
-    else: print("loss_on_batch:", loss_batch.data[0], " time_on_batch:", time.time() - start)
+    print("loss_on_batch:", loss_batch.data[0], " time_on_batch:", time.time() - start)
     return
 
 
@@ -95,7 +94,7 @@ for epoch in range(num_epochs):
         start = time.time()
         questions_this_training_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
         print("Working on batch #: ", batch)
-        train_model(lstm, optimizer, questions_this_training_batch, training_data, word2vec, id2Data, dev_set=False)
+        train_model(lstm, optimizer, questions_this_training_batch, training_data, word2vec, id2Data)
         
     # Evaluate on dev and test sets for MRR score
     dev_MRR_score = eval_model(lstm, dev_question_ids, dev_data, word2vec, id2Data)

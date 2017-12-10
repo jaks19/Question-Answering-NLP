@@ -17,11 +17,9 @@ def get_question_matrix(questionID, word2vec, id2Data, input_size):
     # num_words x dim_words
     q_matrix = torch.Tensor(np.concatenate(q_word_vecs, axis=1).T)
     num_words_found = q_matrix.size()[0]
-    
     if num_words_found < 100:
         padding_rows = torch.zeros(100-num_words_found, input_size)
         q_matrix = torch.cat((q_matrix, padding_rows), 0)
-    
     return [q_matrix.unsqueeze(0), num_words_found]
 
 
