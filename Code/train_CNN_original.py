@@ -129,11 +129,11 @@ for epoch in range(num_epochs):
 
     print("loss on this epoch: ", epoch_loss)
     
-    ''' Pickle Model after each epoch'''
+    ''' Pickle_lstm_part1 Model after each epoch'''
     
     # Note: Model cannot be re-trained, but can be loaded for evaluation (See below)
     if pickle_each_epoch:
-        torch.save(cnn, '../Pickle/CNN_epoch' + str(epoch) + '.pt')
+        torch.save(cnn, '../Pickle_lstm_part1/CNN_epoch' + str(epoch) + '.pt')
 
 
 # Notes:
