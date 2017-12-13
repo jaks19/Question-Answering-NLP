@@ -1,3 +1,7 @@
+from sklearn.feature_extraction.text import CountVectorizer
+
+stop_word_frequency_float = 0.3
+
 # Word mapped to its embedding vector
 def get_words_and_embeddings():
     filepath = "../Data1/vectors_pruned.200.txt"
@@ -25,16 +29,30 @@ def questionID_to_questionData_truncate(max_length):
     filepath = "../Data1/text_tokenized.txt"
     lines = open(filepath, encoding = 'utf8').readlines()
 
+    # First, get a list of stop_words so that these are not put in the word list of a question
+    # Need to go through a complete cycle in the text once here then once more below
+    all_text = []
+    for line in lines:
+        id_title_body_list = line.split('\t')
+        question_text = id_title_body_list[1] + ' ' + id_title_body_list[2]
+        all_text.append(question_text)
+
+    vectorizer = CountVectorizer(binary=True, analyzer='word', max_df=stop_word_frequency_float, token_pattern='[^\s]+[a-z]*[0-9]*')
+    vectorizer.fit(all_text)
+    stop_words = vectorizer.stop_words_
+
     id2Data = {}
     for line in lines:
         id_title_body_list = line.split('\t')
         title_text = id_title_body_list[1].split(" ")
         body_text = id_title_body_list[2].split(" ")
-        if len(title_text) >= max_length:
-            id2Data[int(id_title_body_list[0])] = title_text[:max_length]
+        whole_text = title_text + body_text
+        pruned_text = [word for word in whole_text if word not in stop_words]
+
+        if len(pruned_text) >= max_length:
+            id2Data[int(id_title_body_list[0])] = pruned_text[:max_length]
         else:
-            diff = max_length - len(title_text)
-            id2Data[int(id_title_body_list[0])] = title_text + body_text[:diff]
+            id2Data[int(id_title_body_list[0])] = pruned_text
     return id2Data
 
 
