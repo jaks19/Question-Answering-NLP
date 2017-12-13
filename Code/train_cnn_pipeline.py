@@ -7,12 +7,12 @@ from torch.autograd import Variable
 
 import time
 
-saved_model_name = "bestbest_cnn"
+saved_model_name = "best_cnn"
 
 '''Hyperparams dashboard'''
 margin = 0.2
 lr = 10**-3
-truncation_val = 50
+truncation_val = 100
 
 
 ''' Data Prep '''
@@ -32,7 +32,7 @@ test_question_ids = list(test_data.keys())
 ''' Model Specs '''
 # CNN parameters
 input_size = len(word2vec[list(word2vec.keys())[0]])
-hidden_size = 667
+hidden_size = 500
 kernel_size = 3
 stride = 1
 padding = 0
@@ -55,7 +55,7 @@ optimizer = torch.optim.Adam(cnn.parameters(), lr=lr, weight_decay=0.001)
 ''' Procedural parameters '''
 batch_size = 100
 num_differing_questions = 20
-num_epochs = 10
+num_epochs = 5
 num_batches = round(len(trainingQuestionIds)/batch_size)
 
 
@@ -131,3 +131,4 @@ for epoch in range(num_epochs):
 
     # Save model for this epoch
     torch.save(cnn, '../Pickle/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
+    break
