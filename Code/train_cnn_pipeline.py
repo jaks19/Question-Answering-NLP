@@ -7,12 +7,13 @@ from torch.autograd import Variable
 
 import time
 
-saved_model_name = "best_cnn"
+saved_model_name = "best_cnn2"
 
 '''Hyperparams dashboard'''
 margin = 0.3
 lr = 10**-3
 truncation_val = 100
+dropout = 0.2
 
 
 ''' Data Prep '''
@@ -32,16 +33,17 @@ test_question_ids = list(test_data.keys())
 ''' Model Specs '''
 # CNN parameters
 input_size = len(word2vec[list(word2vec.keys())[0]])
-hidden_size = 500
+hidden_size = 667
 kernel_size = 3
 stride = 1
-padding = 2
+padding = 0
 dilation = 1
 groups = 1
 bias = True
 
 # CNN model
 cnn = torch.nn.Sequential()
+cnn.add_module('drop', torch.nn.Dropout(p = dropout))
 cnn.add_module('conv', torch.nn.Conv1d(in_channels = input_size, out_channels = hidden_size, kernel_size = kernel_size, padding = padding, dilation = dilation, groups = groups, bias = bias))
 cnn.add_module('tanh', torch.nn.Tanh())
 cnn.add_module('norm', torch.nn.BatchNorm1d(num_features = hidden_size))
@@ -96,11 +98,11 @@ def eval_model(cnn, ids, data, word2vec, id2Data, truncation_val):
 
 
 '''Begin training'''
-for epoch in range(1, num_epochs):
+for epoch in range(2, 3):
 
     # Train on whole training data set
     for batch in range(1, num_batches+1):
-        if batch == 121: # memory error with this batch
+        if batch == 121 or batch == 98: # memory error with this batch
             continue
         start = time.time()
         questions_this_training_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
@@ -133,4 +135,4 @@ for epoch in range(1, num_epochs):
         log_file.write('test_p_at_5: ' +  str(test_scores[3]) + '\n')
 
     # Save model for this epoch
-    torch.save(cnn, '../Pickle_lstm_part1/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
+    torch.save(cnn, '../Pickle/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
