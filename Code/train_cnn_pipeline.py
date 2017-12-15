@@ -10,7 +10,7 @@ import time
 saved_model_name = "best_cnn"
 
 '''Hyperparams dashboard'''
-margin = 0.2
+margin = 0.3
 lr = 10**-3
 truncation_val = 100
 
@@ -35,21 +35,22 @@ input_size = len(word2vec[list(word2vec.keys())[0]])
 hidden_size = 500
 kernel_size = 3
 stride = 1
-padding = 0
+padding = 2
 dilation = 1
 groups = 1
 bias = True
 
 # CNN model
 cnn = torch.nn.Sequential()
-cnn.add_module('conv', torch.nn.Conv1d(in_channels = 200, out_channels = hidden_size, kernel_size = kernel_size, padding = padding, dilation = dilation, groups = groups, bias = bias))
+cnn.add_module('conv', torch.nn.Conv1d(in_channels = input_size, out_channels = hidden_size, kernel_size = kernel_size, padding = padding, dilation = dilation, groups = groups, bias = bias))
 cnn.add_module('tanh', torch.nn.Tanh())
+cnn.add_module('norm', torch.nn.BatchNorm1d(num_features = hidden_size))
 
 # Loss function
 loss_function = torch.nn.MultiMarginLoss(margin=margin)
 
 # Optimizer
-optimizer = torch.optim.Adam(cnn.parameters(), lr=lr, weight_decay=0.001)
+optimizer = torch.optim.Adam(cnn.parameters(), lr=lr)
 
 
 ''' Procedural parameters '''
@@ -95,20 +96,22 @@ def eval_model(cnn, ids, data, word2vec, id2Data, truncation_val):
 
 
 '''Begin training'''
-for epoch in range(num_epochs):
+for epoch in range(1, num_epochs):
 
     # Train on whole training data set
     for batch in range(1, num_batches+1):
+        if batch == 121: # memory error with this batch
+            continue
         start = time.time()
         questions_this_training_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
         print("Working on batch #: ", batch)
         train_model(cnn, optimizer, questions_this_training_batch, training_data, word2vec, id2Data, truncation_val)
         
     # Evaluate on dev and test sets for MRR score
-    dev_scores = eval_model(cnn, dev_question_ids, dev_data, word2vec, id2Data, truncation_val)
-    test_scores = eval_model(cnn, test_question_ids, test_data, word2vec, id2Data, truncation_val)
-    print("MRR score on dev set:", dev_scores[0])
+    test_scores = eval_model(cnn, test_question_ids, test_data, word2vec, id2Data, truncation_val) 
     print("MRR score on test set:", test_scores[0])
+    dev_scores = eval_model(cnn, dev_question_ids, dev_data, word2vec, id2Data, truncation_val)
+    print("MRR score on dev set:", dev_scores[0])
     print("MAP score on dev set:", dev_scores[1])
     print("MAP score on test set:", test_scores[1])
     print("Precision at 1 score on dev set:", dev_scores[2])
@@ -131,4 +134,3 @@ for epoch in range(num_epochs):
 
     # Save model for this epoch
     torch.save(cnn, '../Pickle/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
-    break
