@@ -7,12 +7,12 @@ from torch.autograd import Variable
 
 import time
 
-saved_model_name = "bestbest"
+saved_model_name = "another_sunday_attempt"
 
 
 '''Hyperparams dashboard'''
 dropout = 0.2
-margin = 0.4
+margin = 0.2
 lr = 10**-3
 
 
@@ -21,10 +21,10 @@ word2vec = get_words_and_embeddings()
 id2Data = questionID_to_questionData_truncate(100)
 
 training_data = training_id_to_similar_different()
-trainingQuestionIds = list(training_data.keys())[:10]
+trainingQuestionIds = list(training_data.keys())
 
 dev_data = devTest_id_to_similar_different(dev=True)
-dev_question_ids = list(dev_data.keys())[:2]
+dev_question_ids = list(dev_data.keys())
 
 test_data = devTest_id_to_similar_different(dev=False)
 test_question_ids = list(test_data.keys())
@@ -32,7 +32,7 @@ test_question_ids = list(test_data.keys())
 
 ''' Model Specs '''
 input_size = len(word2vec[list(word2vec.keys())[0]])
-hidden_size = 105
+hidden_size = 100
 num_layers = 1
 bias = True
 batch_first = True
@@ -48,9 +48,9 @@ c0 = Variable(torch.zeros(first_dim, 1, hidden_size), requires_grad=False)
 
 
 ''' Procedural parameters '''
-batch_size = 2
+batch_size = 100
 num_differing_questions = 20
-num_epochs = 10
+num_epochs = 25
 num_batches = round(len(trainingQuestionIds)/batch_size)
 
 
@@ -110,4 +110,4 @@ for epoch in range(num_epochs):
         log_file.write('test_MRR: ' +  str(test_MRR_score) + '\n')
 
     # Save model for this epoch
-    # torch.save(lstm, '../Pickle/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
+    torch.save(lstm, '../Pickle_lstm_part1/' + saved_model_name + '_epoch' + str(epoch) + '.pt')

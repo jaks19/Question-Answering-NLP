@@ -133,4 +133,4 @@ for epoch in range(1, num_epochs):
         log_file.write('test_p_at_5: ' +  str(test_scores[3]) + '\n')
 
     # Save model for this epoch
-    torch.save(cnn, '../Pickle/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
+    torch.save(cnn, '../Pickle_lstm_part1/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
