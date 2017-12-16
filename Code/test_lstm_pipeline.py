@@ -12,7 +12,7 @@ id2Data = questionID_to_questionData_truncate(100)
 
 
 ''' Model (Specify pickled model name)'''
-lstm = torch.load('../Pickle_lstm_part1/best_model_epoch4.pt')
+#lstm = torch.load('../Pickle_lstm_part1/best_model_epoch4.pt')
 lstm.eval()
 
 bidirectional = True

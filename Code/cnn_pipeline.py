@@ -7,13 +7,10 @@ from torch.autograd import Variable
 
 import time
 
-saved_model_name = "best_cnn2"
-
 '''Hyperparams dashboard'''
 margin = 0.3
 lr = 10**-3
 truncation_val = 100
-dropout = 0.2
 
 
 ''' Data Prep '''
