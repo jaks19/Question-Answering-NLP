@@ -7,9 +7,6 @@ from torch.autograd import Variable
 
 import time
 
-saved_model_name = "another_sunday_attempt"
-
-
 '''Hyperparams dashboard'''
 dropout = 0.2
 margin = 0.2
@@ -101,13 +98,3 @@ for epoch in range(num_epochs):
     test_MRR_score = eval_model(lstm, test_question_ids, test_data, word2vec, id2Data)
     print("MRR score on dev set:", dev_MRR_score)
     print("MRR score on test set:", test_MRR_score)
-
-    # Log results to local logs.txt file
-    with open('logs.txt', 'a') as log_file:
-        log_file.write('epoch: ' + str(epoch) + '\n')
-        log_file.write('lr: ' + str(lr) +  ' marg: ' + str(margin) + ' drop: ' + str(dropout) + '\n' )        
-        log_file.write('dev_MRR: ' +  str(dev_MRR_score) + '\n')
-        log_file.write('test_MRR: ' +  str(test_MRR_score) + '\n')
-
-    # Save model for this epoch
-    torch.save(lstm, '../Pickle_lstm_part1/' + saved_model_name + '_epoch' + str(epoch) + '.pt')

@@ -4,7 +4,7 @@ from lstm_utils import *
 
 
 ''' Data Prep '''
-dev = False
+dev = True
 testing_data = devTest_id_to_similar_different(dev)
 testingQuestionIds = list(testing_data.keys())
 word2vec = get_words_and_embeddings()
