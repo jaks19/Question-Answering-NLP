@@ -54,7 +54,7 @@ optimizer = torch.optim.Adam(cnn.parameters(), lr=lr)
 ''' Procedural parameters '''
 batch_size = 100
 num_differing_questions = 20
-num_epochs = 5
+num_epochs = 25
 num_batches = round(len(trainingQuestionIds)/batch_size)
 
 
@@ -98,21 +98,11 @@ for epoch in range(num_epochs):
 
     # Train on whole training data set
     for batch in range(1, num_batches+1):
-        if batch == 121 or batch == 98: # memory error with this batch
-            continue
         start = time.time()
         questions_this_training_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
         print("Working on batch #: ", batch)
         train_model(cnn, optimizer, questions_this_training_batch, training_data, word2vec, id2Data, truncation_val)
 
-    # Evaluate on dev and test sets for MRR score
-    test_scores = eval_model(cnn, test_question_ids, test_data, word2vec, id2Data, truncation_val) 
+    # Evaluate on dev set for MRR score
     dev_scores = eval_model(cnn, dev_question_ids, dev_data, word2vec, id2Data, truncation_val)
-    print("MRR score on test set:", test_scores[0])
     print("MRR score on dev set:", dev_scores[0])
-    print("MAP score on dev set:", dev_scores[1])
-    print("MAP score on test set:", test_scores[1])
-    print("Precision at 1 score on dev set:", dev_scores[2])
-    print("Precision at 1 score on test set:", test_scores[2])
-    print("Precision at 5 score on dev set:", dev_scores[3])
-    print("Precision at 5 score on test set:", test_scores[3])

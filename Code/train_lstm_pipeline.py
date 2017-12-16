@@ -93,8 +93,6 @@ for epoch in range(num_epochs):
         print("Working on batch #: ", batch)
         train_model(lstm, optimizer, questions_this_training_batch, training_data, word2vec, id2Data)
         
-    # Evaluate on dev and test sets for MRR score
+    # Evaluate on dev set for MRR score
     dev_MRR_score = eval_model(lstm, dev_question_ids, dev_data, word2vec, id2Data)
-    test_MRR_score = eval_model(lstm, test_question_ids, test_data, word2vec, id2Data)
     print("MRR score on dev set:", dev_MRR_score)
-    print("MRR score on test set:", test_MRR_score)
