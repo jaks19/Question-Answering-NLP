@@ -43,7 +43,6 @@ bias = True
 
 # CNN model
 cnn = torch.nn.Sequential()
-cnn.add_module('drop', torch.nn.Dropout(p = dropout))
 cnn.add_module('conv', torch.nn.Conv1d(in_channels = input_size, out_channels = hidden_size, kernel_size = kernel_size, padding = padding, dilation = dilation, groups = groups, bias = bias))
 cnn.add_module('tanh', torch.nn.Tanh())
 cnn.add_module('norm', torch.nn.BatchNorm1d(num_features = hidden_size))
@@ -111,8 +110,8 @@ for epoch in range(num_epochs):
 
     # Evaluate on dev and test sets for MRR score
     test_scores = eval_model(cnn, test_question_ids, test_data, word2vec, id2Data, truncation_val) 
-    print("MRR score on test set:", test_scores[0])
     dev_scores = eval_model(cnn, dev_question_ids, dev_data, word2vec, id2Data, truncation_val)
+    print("MRR score on test set:", test_scores[0])
     print("MRR score on dev set:", dev_scores[0])
     print("MAP score on dev set:", dev_scores[1])
     print("MAP score on test set:", test_scores[1])
@@ -120,19 +119,3 @@ for epoch in range(num_epochs):
     print("Precision at 1 score on test set:", test_scores[2])
     print("Precision at 5 score on dev set:", dev_scores[3])
     print("Precision at 5 score on test set:", test_scores[3])
-
-    # Log results to local logs.txt file
-    with open('logs_cnn.txt', 'a') as log_file:
-        log_file.write('epoch: ' + str(epoch) + '\n')
-        log_file.write('lr: ' + str(lr) +  ' marg: ' + str(margin) + '\n' )        
-        log_file.write('dev_MRR: ' +  str(dev_scores[0]) + '\n')
-        log_file.write('test_MRR: ' +  str(test_scores[0]) + '\n')
-        log_file.write('dev_MAP: ' +  str(dev_scores[1]) + '\n')
-        log_file.write('test_MAP: ' +  str(test_scores[1]) + '\n')
-        log_file.write('dev_p_at_1: ' +  str(dev_scores[2]) + '\n')
-        log_file.write('test_p_at_1: ' +  str(test_scores[2]) + '\n')
-        log_file.write('dev_p_at_5: ' +  str(dev_scores[3]) + '\n')
-        log_file.write('test_p_at_5: ' +  str(test_scores[3]) + '\n')
-
-    # Save model for this epoch
-    torch.save(cnn, '../Pickle/' + saved_model_name + '_epoch' + str(epoch) + '.pt')
