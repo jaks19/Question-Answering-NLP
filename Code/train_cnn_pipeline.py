@@ -108,7 +108,7 @@ for epoch in range(num_epochs):
         questions_this_training_batch = trainingQuestionIds[batch_size * (batch - 1):batch_size * batch]
         print("Working on batch #: ", batch)
         train_model(cnn, optimizer, questions_this_training_batch, training_data, word2vec, id2Data, truncation_val)
-        
+
     # Evaluate on dev and test sets for MRR score
     test_scores = eval_model(cnn, test_question_ids, test_data, word2vec, id2Data, truncation_val) 
     print("MRR score on test set:", test_scores[0])
