@@ -98,7 +98,7 @@ def eval_model(cnn, ids, data, word2vec, id2Data, truncation_val):
 
 
 '''Begin training'''
-for epoch in range(2, 3):
+for epoch in range(num_epochs):
 
     # Train on whole training data set
     for batch in range(1, num_batches+1):
