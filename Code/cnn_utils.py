@@ -97,7 +97,7 @@ def construct_qs_matrix_training(q_ids_sequential, cnn, word2vec, id2Data, dict_
     print(qs_padded.size())
     qs_hidden = cnn(torch.transpose(qs_padded, 1, 2))
     sum_h_qs = torch.sum(qs_hidden, dim=2)
-    print(sum_h_qs.size())
+    print(sum_h_qs.squeeze(2).size())
     print(len(qs_seq_length))
     mean_pooled_h_qs = torch.div(sum_h_qs.squeeze(2), torch.autograd.Variable(torch.FloatTensor(qs_seq_length)[:, np.newaxis]))
     qs_tuples = mean_pooled_h_qs.split(1+num_differing_questions)
