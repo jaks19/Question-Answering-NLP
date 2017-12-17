@@ -8,7 +8,7 @@ from torch.autograd import Variable
 import time
 
 '''Hyperparams dashboard'''
-margin = 0.3
+margin = 0.2
 lr = 10**-3
 truncation_val = 100
 
@@ -30,7 +30,7 @@ test_question_ids = list(test_data.keys())
 ''' Model Specs '''
 # CNN parameters
 input_size = len(word2vec[list(word2vec.keys())[0]])
-hidden_size = 667
+hidden_size = 400
 kernel_size = 3
 stride = 1
 padding = 0
