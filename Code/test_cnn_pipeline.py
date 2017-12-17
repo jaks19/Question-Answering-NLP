@@ -1,6 +1,6 @@
 from preprocess import *
 from scoring_metrics import *
-from lstm_utils import *
+from cnn_utils import *
 
 
 ''' Data Prep '''
@@ -12,20 +12,17 @@ id2Data = questionID_to_questionData_truncate(100)
 
 
 ''' Model (Specify pickled model name)'''
-#lstm = torch.load('model file path')
-lstm.eval()
-
-h0 = Variable(torch.zeros(first_dim, 1, hidden_size), requires_grad=False)
-c0 = Variable(torch.zeros(first_dim, 1, hidden_size), requires_grad=False)
+#cnn = torch.load('model file path')
+cnn.eval()
 
 
 '''Begin testing'''
 sequence_ids, p_pluses_indices_dict = organize_test_ids(testingQuestionIds, testing_data)
 
-candidates_qs_tuples_matrix = construct_qs_matrix_testing(sequence_ids, lstm, h0, c0, word2vec,
+candidates_qs_tuples_matrix = construct_qs_matrix_testing(sequence_ids, cnn, word2vec,
     id2Data, input_size, num_differing_questions, candidates=True)
 
-main_qs_tuples_matrix = construct_qs_matrix_testing(testingQuestionIds, lstm, h0, c0, word2vec,
+main_qs_tuples_matrix = construct_qs_matrix_testing(testingQuestionIds, cnn, word2vec,
     id2Data, input_size, num_differing_questions, candidates=False)
 
 similarity_matrix = torch.nn.functional.cosine_similarity(candidates_qs_tuples_matrix, main_qs_tuples_matrix,
